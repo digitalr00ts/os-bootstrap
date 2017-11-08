@@ -19,7 +19,7 @@ virt-install --connect qemu:///system --virt-type kvm --accelerate \
   --ram 1024 --vcpus 2 \
   --controller scsi,model=virtio-scsi \
   --disk path=/var/lib/libvirt/images/${VM_NAME}.qcow2,format=qcow2,bus=scsi,cache=writethrough,discard=unmap \
-  --network model=virtio \
+  --network network=default,model=virtio \
   --console pty,target_type=serial \
   --watchdog default \
   --memballoon virtio \
@@ -71,7 +71,7 @@ virt-install --connect qemu:///system --virt-type kvm --accelerate \
   --ram 1024 --vcpus 2 \
   --controller scsi,model=virtio-scsi \
   --disk path=/var/lib/libvirt/images/${VM_NAME}.qcow2,format=qcow2,bus=scsi,cache=writethrough,discard=unmap \
-  --network model=virtio \
+  --network network=default,model=virtio \
   --console pty,target_type=serial \
   --watchdog default \
   --memballoon virtio \
