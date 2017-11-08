@@ -13,6 +13,7 @@ Notes:
 VM_NAME="${VM_NAME:-vm-default}"
 qemu-img create -f qcow2 /var/lib/libvirt/images/${VM_NAME}.qcow2 8G
 
+# Need to prevent reboot at end of installation
 virt-install --connect qemu:///system --virt-type kvm --accelerate \
   --name ${VM_NAME} \
   --os-type=linux --os-variant ubuntu16.04 \
@@ -31,12 +32,14 @@ virt-install --connect qemu:///system --virt-type kvm --accelerate \
 # Have not found a way to enable autodeflate w/ virt-install
 sed -i'' "s/<memballoon model='virtio'>/<memballoon model='virtio' autodeflate='on'>/" /etc/libvirt/qemu/${VM_NAME}.xml
 
-kvm-nbd -c /dev/nbd0 /var/lib/libvirt/images/${VM_NAME}.qcow2
-partprobe /dev/nbd0
+modprobe nbd max_part=8
+qemu-nbd --connect=/dev/nbd0 /var/lib/libvirt/images/${VM_NAME}.qcow2
+#partprobe /dev/nbd0
 mkdir -p /mnt/vm-image/
-mount /dev/nbd0p2 /mnt/vm-image/
+mount /dev/ubuntu-vg/root /mnt/vm-image/
 mount /dev/nbd0p1 /mnt/vm-image/boot
 chroot /mnt/vm-image/
+export PATH="/bin:${PATH}"
 #mount --bind /dev/ /mnt/dev
 #mount -t proc none /proc
 #mount -t sysfs none /sys
@@ -50,13 +53,13 @@ echo 'DISABLED_MODULES="ath_hal fc fglrx fwlanusb ltm nv"' >> /etc/default/linux
 
 #disable hibernate
 rm /etc/initramfs-tools/conf.d/resume
-sudo update-initramfs -u
+update-initramfs -u
 
-umount /proc/ /sys/ /dev/
+#umount /proc/ /sys/ /dev/
 exit
 
 umount -R /mnt
-kvm-nbd -d /dev/nbd0
+qemu-nbd -d /dev/nbd0
 ```
 
 ### Fedora VM
